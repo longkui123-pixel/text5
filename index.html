@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>恋爱小日记</title>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="恋爱小日记">
+<meta name="theme-color" content="#e56b8c">
+<link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%23ff7ea0'/><text x='50' y='64' font-size='46' text-anchor='middle' fill='white'>LOVE</text></svg>">
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    font-family: "PingFang SC","Microsoft YaHei",sans-serif;
+    background: linear-gradient(135deg,#ffe8f0 0%,#fff4e6 50%,#ffe8f0 100%);
+    min-height:100vh; color:#5b4a56;
+  }
+  .hidden{display:none!important;}
+  #errBar{position:fixed;left:0;right:0;top:0;background:#c0392b;color:#fff;font-size:12px;padding:8px 12px;z-index:999;display:none;word-break:break-all;}
+  #loginPage{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px;}
+  .login-card{background:#fff;border-radius:24px;box-shadow:0 12px 40px rgba(255,150,180,.25);padding:40px 36px;width:100%;max-width:380px;text-align:center;}
+  .login-card h1{font-size:26px;color:#e56b8c;margin-bottom:6px;}
+  .login-card .sub{color:#b59aa6;font-size:14px;margin-bottom:28px;}
+  .avatar-row{display:flex;gap:16px;justify-content:center;margin-bottom:24px;}
+  .avatar-btn{width:110px;padding:14px 6px;border-radius:18px;border:2px solid #f3d7e0;background:#fffdfa;cursor:pointer;font-size:14px;color:#8a6b7a;transition:.2s;}
+  .avatar-btn .face{font-size:30px;display:block;margin-bottom:6px;}
+  .avatar-btn.active{border-color:#e56b8c;background:#fff0f5;color:#e56b8c;transform:translateY(-3px);box-shadow:0 6px 16px rgba(229,107,140,.25);}
+  .login-card input{width:100%;padding:12px 16px;border:2px solid #f3d7e0;border-radius:14px;font-size:15px;margin-bottom:14px;outline:none;color:#5b4a56;}
+  .login-card input:focus{border-color:#e56b8c;}
+  .btn-main{width:100%;padding:13px;border:none;border-radius:14px;background:linear-gradient(135deg,#ff7ea0,#ff9e80);color:#fff;font-size:16px;cursor:pointer;letter-spacing:2px;transition:.2s;}
+  .btn-main:hover{opacity:.9;}
+  .btn-ghost{width:100%;padding:11px;margin-top:10px;border:2px solid #f3d7e0;border-radius:14px;background:#fff;color:#c08a9c;font-size:13px;cursor:pointer;}
+  .login-hint{margin-top:16px;font-size:12px;color:#c4aeb8;line-height:1.6;}
+  header{background:rgba(255,255,255,.85);padding:14px 22px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 2px 12px rgba(255,150,180,.15);position:sticky;top:0;z-index:10;}
+  header h1{font-size:20px;color:#e56b8c;}
+  .user-chip{display:flex;align-items:center;gap:10px;font-size:14px;color:#8a6b7a;}
+  .user-chip button{border:none;background:#fff0f5;color:#e56b8c;border-radius:10px;padding:7px 14px;cursor:pointer;font-size:13px;}
+  .container{max-width:760px;margin:0 auto;padding:24px 18px 80px;}
+  .tabs{display:flex;gap:10px;margin-bottom:22px;}
+  .tab{flex:1;padding:12px;border:none;border-radius:14px;background:#fff;color:#a07d8c;font-size:15px;cursor:pointer;box-shadow:0 2px 8px rgba(255,150,180,.12);transition:.2s;}
+  .tab.active{background:linear-gradient(135deg,#ff7ea0,#ff9e80);color:#fff;}
+  .sync-status{font-size:12px;color:#b59aa6;text-align:center;margin-bottom:14px;min-height:16px;}
+  .card{background:#fff;border-radius:20px;box-shadow:0 6px 24px rgba(255,150,180,.15);padding:26px;margin-bottom:24px;}
+  .card h2{font-size:17px;color:#e56b8c;margin-bottom:16px;}
+  .field{margin-bottom:16px;}
+  .field label{display:block;font-size:13px;color:#a07d8c;margin-bottom:6px;}
+  .field input,.field textarea{width:100%;padding:11px 14px;border:2px solid #f3d7e0;border-radius:12px;font-size:14px;outline:none;font-family:inherit;color:#5b4a56;background:#fffdfa;}
+  .field textarea{resize:vertical;min-height:70px;}
+  .field input:focus,.field textarea:focus{border-color:#e56b8c;}
+  .mood-row{display:flex;gap:8px;flex-wrap:wrap;}
+  .mood-opt{font-size:14px;padding:8px 12px;border-radius:12px;border:2px solid transparent;cursor:pointer;background:#fff8fa;transition:.15s;}
+  .mood-opt.active{border-color:#e56b8c;background:#fff0f5;transform:scale(1.06);}
+  .save-btn{width:100%;padding:13px;border:none;border-radius:14px;background:linear-gradient(135deg,#ff7ea0,#ff9e80);color:#fff;font-size:15px;cursor:pointer;letter-spacing:2px;}
+  .save-btn:disabled{opacity:.6;cursor:wait;}
+  .diary-item{background:#fff;border-radius:18px;box-shadow:0 4px 16px rgba(255,150,180,.12);padding:20px;margin-bottom:16px;position:relative;}
+  .diary-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex-wrap:wrap;gap:6px;}
+  .diary-date{font-weight:600;color:#e56b8c;font-size:15px;}
+  .badge{font-size:12px;padding:4px 10px;border-radius:999px;}
+  .badge.me{background:#fff0f5;color:#e56b8c;}
+  .badge.partner{background:#eef4ff;color:#6b8ce5;}
+  .diary-mood{font-size:14px;margin-left:8px;color:#a07d8c;}
+  .diary-sec{margin:8px 0;font-size:14px;line-height:1.7;}
+  .diary-sec .tag{display:inline-block;font-size:12px;color:#fff;border-radius:6px;padding:2px 8px;margin-right:8px;vertical-align:1px;}
+  .tag.happy{background:#ffb36b;}
+  .tag.sad{background:#8fb8e8;}
+  .tag.msg{background:#ff8fae;}
+  .letter-box{background:#fff0f5;border-left:4px solid #ff8fae;border-radius:0 12px 12px 0;padding:12px 14px;margin-top:12px;font-size:14px;line-height:1.8;color:#8a5568;font-style:italic;}
+  .del-btn{position:absolute;top:14px;right:16px;border:none;background:none;cursor:pointer;font-size:15px;opacity:.35;}
+  .del-btn:hover{opacity:1;}
+  .empty{text-align:center;color:#c4aeb8;padding:50px 0;font-size:14px;}
+  .empty .big{font-size:40px;display:block;margin-bottom:12px;}
+  .modal-mask{position:fixed;inset:0;background:rgba(90,60,75,.4);z-index:50;display:flex;align-items:center;justify-content:center;padding:20px;}
+  .modal{background:#fff;border-radius:20px;padding:30px;width:100%;max-width:420px;}
+  .modal h2{font-size:18px;color:#e56b8c;margin-bottom:8px;}
+  .modal p{font-size:13px;color:#a07d8c;line-height:1.7;margin-bottom:16px;}
+  .modal .field input{font-size:13px;}
+  .modal .btns{display:flex;gap:10px;margin-top:6px;}
+  .modal .btns button{flex:1;padding:11px;border-radius:12px;font-size:14px;cursor:pointer;border:none;}
+  .btn-cancel{background:#f3eef1;color:#8a6b7a;}
+  .btn-ok{background:linear-gradient(135deg,#ff7ea0,#ff9e80);color:#fff;}
+  .toast{position:fixed;bottom:30px;left:50%;transform:translateX(-50%) translateY(80px);background:#e56b8c;color:#fff;padding:11px 26px;border-radius:999px;font-size:14px;opacity:0;transition:.3s;z-index:99;box-shadow:0 6px 20px rgba(229,107,140,.4);}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+</style>
+</head>
+<body>
+<div id="errBar"></div>
+
+<div id="loginPage">
+  <div class="login-card">
+    <h1>恋爱小日记</h1>
+    <p class="sub">记录拿铁和芋泥紫薯的每一天</p>
+    <div class="avatar-row">
+      <button class="avatar-btn active" data-user="A" onclick="pickUser('A', this)"><span class="face">☕</span>拿铁</button>
+      <button class="avatar-btn" data-user="B" onclick="pickUser('B', this)"><span class="face">🍠</span>芋泥紫薯</button>
+    </div>
+    <input type="password" id="pwdInput" placeholder="请输入密码（默认 1234）" maxlength="20">
+    <button class="btn-main" onclick="login()">进入我们的小世界</button>
+    <button class="btn-ghost" onclick="openSettings()">云同步设置</button>
+    <p class="login-hint">两人填同一个 jsonbin.io 的 Key + 同一个共享码，就能看到彼此的日记</p>
+  </div>
+</div>
+
+<div id="appPage" class="hidden">
+  <header>
+    <h1>恋爱小日记</h1>
+    <div class="user-chip">
+      <span id="welcomeText"></span>
+      <button onclick="openSettings()">设置</button>
+      <button onclick="logout()">退出</button>
+    </div>
+  </header>
+  <div class="container">
+    <div class="tabs">
+      <button class="tab active" id="tabWrite" onclick="switchTab('write')">写日记</button>
+      <button class="tab" id="tabList" onclick="switchTab('list')">我们的日记</button>
+    </div>
+    <div class="sync-status" id="syncStatus"></div>
+
+    <div id="writePanel">
+      <div class="card">
+        <h2>今天的记录</h2>
+        <div class="field">
+          <label>日期</label>
+          <input type="date" id="fDate">
+        </div>
+        <div class="field">
+          <label>今天的心情</label>
+          <div class="mood-row" id="moodRow"></div>
+        </div>
+        <div class="field">
+          <label>今天开心的事</label>
+          <textarea id="fHappy" placeholder="哪怕是很小的事，也值得记下来"></textarea>
+        </div>
+        <div class="field">
+          <label>今天烦心的事</label>
+          <textarea id="fSad" placeholder="说出来会好受一点，我在听"></textarea>
+        </div>
+        <div class="field">
+          <label>想和对方说的话</label>
+          <textarea id="fMsg" placeholder="有些话，写下来比说出口更温柔"></textarea>
+        </div>
+        <div class="field">
+          <label>今日碎碎念（可选）</label>
+          <input type="text" id="fExtra" placeholder="其它想记下的小事">
+        </div>
+        <button class="save-btn" id="saveBtn" onclick="saveDiary()">保存今天</button>
+      </div>
+    </div>
+
+    <div id="listPanel" class="hidden">
+      <div id="diaryList"></div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-mask hidden" id="settingsMask">
+  <div class="modal">
+    <h2>云同步设置</h2>
+    <p>
+      1. 打开 jsonbin.io 注册账号；<br>
+      2. 登录后点右上角头像，进入 API Keys，复制 Master Key，填到下面第一格；<br>
+      3. 点保存并连接：第一次会自动创建一个云日记本，生成一串共享码；<br>
+      4. 把这串共享码发给对方，对方填同一个 Key 和同一个共享码即可互通。
+    </p>
+    <div class="field"><input id="sAppId" placeholder="Master Key（API Key）"></div>
+    <div class="field"><input id="sAppKey" placeholder="共享码（第一次自己留空）"></div>
+    <div class="field hidden" id="shareCodeBox"><input id="sShareCode" readonly placeholder=""></div>
+    <div class="btns">
+      <button class="btn-cancel" onclick="closeSettings()">取消</button>
+      <button class="btn-ok" onclick="saveSettings()">保存并连接</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+window.onerror = function(msg, src, line, col){
+  var bar = document.getElementById("errBar");
+  if(bar){ bar.style.display = "block"; bar.innerText = "页面出错：" + msg + "（第" + line + "行）"; }
+  return false;
+};
+
+var USERS = {
+  A: { name: "拿铁", face: "☕", pwd: "1234" },
+  B: { name: "芋泥紫薯", face: "🍠", pwd: "1234" }
+};
+var MOODS = ["开心", "甜甜的", "平静", "一般", "有点低落", "难过", "烦躁", "不舒服"];
+var curUser = null;
+var curMood = MOODS[0];
+var selectedUser = "A";
+var entries = [];
+var cloudReady = false;
+
+function loadLocal(){
+  try {
+    var raw = localStorage.getItem("loveDiaryEntries");
+    entries = raw ? JSON.parse(raw) : [];
+    if(!Array.isArray(entries)) entries = [];
+  } catch(e) { entries = []; }
+}
+function saveLocal(){
+  try { localStorage.setItem("loveDiaryEntries", JSON.stringify(entries)); } catch(e) {}
+}
+function getCfg(){
+  try {
+    var raw = localStorage.getItem("loveDiaryCloudCfg");
+    return raw ? JSON.parse(raw) : {};
+  } catch(e) { return {}; }
+}
+function setCfg(obj){
+  var old = getCfg();
+  var next = {};
+  for(var k in old) next[k] = old[k];
+  for(var j in obj) next[j] = obj[j];
+  try { localStorage.setItem("loveDiaryCloudCfg", JSON.stringify(next)); } catch(e) {}
+}
+function initCloud(){
+  var c = getCfg();
+  cloudReady = !!(c.apiKey && c.binId);
+}
+
+function toast(msg){
+  var t = document.getElementById("toast");
+  if(!t) return;
+  t.innerText = msg;
+  t.className = "toast show";
+  setTimeout(function(){ t.className = "toast"; }, 2200);
+}
+
+function pickUser(uid, dom){
+  selectedUser = uid;
+  var btns = document.querySelectorAll(".avatar-btn");
+  for(var i = 0; i < btns.length; i++) btns[i].classList.remove("active");
+  if(dom) dom.classList.add("active");
+}
+
+function login(){
+  var pwd = document.getElementById("pwdInput").value.trim();
+  if(USERS[selectedUser].pwd !== pwd){
+    toast("密码不对（默认 1234）");
+    return;
+  }
+  curUser = selectedUser;
+  loadLocal();
+  initCloud();
+  document.getElementById("loginPage").classList.add("hidden");
+  document.getElementById("appPage").classList.remove("hidden");
+  document.getElementById("welcomeText").innerText = USERS[curUser].face + " " + USERS[curUser].name;
+  renderMood();
+  var now = new Date();
+  var mm = String(now.getMonth() + 1).padStart(2, "0");
+  var dd = String(now.getDate()).padStart(2, "0");
+  document.getElementById("fDate").value = now.getFullYear() + "-" + mm + "-" + dd;
+  renderList();
+  syncPull();
+}
+
+function logout(){
+  curUser = null;
+  document.getElementById("appPage").classList.add("hidden");
+  document.getElementById("loginPage").classList.remove("hidden");
+}
+
+function renderMood(){
+  var wrap = document.getElementById("moodRow");
+  wrap.innerHTML = "";
+  for(var i = 0; i < MOODS.length; i++){
+    (function(idx){
+      var opt = document.createElement("button");
+      opt.className = "mood-opt" + (MOODS[idx] === curMood ? " active" : "");
+      opt.innerText = MOODS[idx];
+      opt.type = "button";
+      opt.onclick = function(){
+        curMood = MOODS[idx];
+        renderMood();
+      };
+      wrap.appendChild(opt);
+    })(i);
+  }
+}
+
+function switchTab(name){
+  var w = document.getElementById("writePanel");
+  var l = document.getElementById("listPanel");
+  var tw = document.getElementById("tabWrite");
+  var tl = document.getElementById("tabList");
+  if(name === "write"){
+    w.classList.remove("hidden");
+    l.classList.add("hidden");
+    tw.classList.add("active");
+    tl.classList.remove("active");
+  } else {
+    w.classList.add("hidden");
+    l.classList.remove("hidden");
+    tw.classList.remove("active");
+    tl.classList.add("active");
+    renderList();
+    syncPull();
+  }
+}
+
+function jbFetch(path, opts){
+  var c = getCfg();
+  var conf = opts || {};
+  var headers = {
+    "X-Master-Key": c.apiKey,
+    "Content-Type": "application/json"
+  };
+  conf.headers = headers;
+  return fetch("https://api.jsonbin.io/v3" + path, conf).then(function(res){
+    if(!res.ok) throw new Error("接口错误 " + res.status);
+    return res.json();
+  });
+}
+
+function createBin(){
+  return jbFetch("/b", { method: "POST", body: JSON.stringify([]) }).then(function(json){
+    return json.metadata.id;
+  });
+}
+
+function pullCloud(){
+  var c = getCfg();
+  if(!c.binId) return Promise.resolve(null);
+  return jbFetch("/b/" + c.binId + "/latest", { method: "GET" }).then(function(json){
+    return json.record;
+  });
+}
+
+function pushCloud(arr){
+  var c = getCfg();
+  if(!c.binId) return Promise.resolve();
+  return jbFetch("/b/" + c.binId, { method: "PUT", body: JSON.stringify(arr) });
+}
+
+function syncPull(){
+  var status = document.getElementById("syncStatus");
+  if(!cloudReady){ status.innerText = "本地模式（未开云同步）"; return; }
+  status.innerText = "正在同步云端...";
+  pullCloud().then(function(remote){
+    if(remote && Array.isArray(remote)){
+      var merged = entries.slice();
+      for(var i = 0; i < remote.length; i++){
+        var found = false;
+        for(var j = 0; j < merged.length; j++){
+          if(merged[j].ts === remote[i].ts){ found = true; break; }
+        }
+        if(!found) merged.push(remote[i]);
+      }
+      merged.sort(function(a, b){ return b.ts - a.ts; });
+      entries = merged;
+      saveLocal();
+      renderList();
+      status.innerText = "同步完成";
+    } else {
+      status.innerText = "云端还没有数据";
+    }
+  }).catch(function(e){
+    status.innerText = "同步失败：" + e.message;
+  });
+}
+
+function syncPush(){
+  if(!cloudReady) return Promise.resolve();
+  return pushCloud(entries).catch(function(){
+    toast("云端保存失败，检查 Key 和共享码");
+  });
+}
+
+function saveDiary(){
+  var date = document.getElementById("fDate").value;
+  var happy = document.getElementById("fHappy").value.trim();
+  var sad = document.getElementById("fSad").value.trim();
+  var msg = document.getElementById("fMsg").value.trim();
+  var extra = document.getElementById("fExtra").value.trim();
+  if(!date){ toast("请选择日期"); return; }
+  if(!happy && !sad && !msg && !extra){ toast("至少写一点内容呀"); return; }
+  entries.push({
+    user: curUser, date: date, mood: curMood,
+    happy: happy, sad: sad, msg: msg, extra: extra, ts: Date.now()
+  });
+  saveLocal();
+  syncPush();
+  toast("保存成功");
+  document.getElementById("fHappy").value = "";
+  document.getElementById("fSad").value = "";
+  document.getElementById("fMsg").value = "";
+  document.getElementById("fExtra").value = "";
+  renderList();
+  switchTab("list");
+}
+
+function escapeHtml(str){
+  return String(str).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
+
+function renderList(){
+  var wrap = document.getElementById("diaryList");
+  if(entries.length === 0){
+    wrap.innerHTML = '<div class="empty"><span class="big">📝</span>还没有日记，快来写下第一笔</div>';
+    return;
+  }
+  var sorted = entries.slice().sort(function(a, b){ return b.ts - a.ts; });
+  var html = "";
+  for(var i = 0; i < sorted.length; i++){
+    var d = sorted[i];
+    var u = USERS[d.user] || { name: "TA", face: "💗" };
+    var isMe = d.user === curUser;
+    html += '<div class="diary-item">';
+    if(isMe){
+      html += '<button class="del-btn" onclick="delItem(' + d.ts + ')">删除</button>';
+    }
+    html += '<div class="diary-head">' +
+      '<span class="diary-date">' + escapeHtml(d.date) +
+      '<span class="diary-mood">' + escapeHtml(d.mood || "") + '</span></span>' +
+      '<span class="badge ' + (isMe ? "me" : "partner") + '">' + u.face + " " + u.name + '</span>' +
+      '</div>';
+    if(d.happy) html += '<div class="diary-sec"><span class="tag happy">开心</span>' + escapeHtml(d.happy) + '</div>';
+    if(d.sad) html += '<div class="diary-sec"><span class="tag sad">心事</span>' + escapeHtml(d.sad) + '</div>';
+    if(d.msg) html += '<div class="letter-box"><span class="tag msg">悄悄话</span>' + escapeHtml(d.msg) + '</div>';
+    if(d.extra) html += '<div class="diary-sec"><span class="tag msg">碎碎念</span>' + escapeHtml(d.extra) + '</div>';
+    html += '</div>';
+  }
+  wrap.innerHTML = html;
+}
+
+function delItem(ts){
+  var next = [];
+  for(var i = 0; i < entries.length; i++){
+    if(entries[i].ts !== ts) next.push(entries[i]);
+  }
+  entries = next;
+  saveLocal();
+  syncPush();
+  renderList();
+  toast("已删除");
+}
+
+function openSettings(){
+  document.getElementById("settingsMask").classList.remove("hidden");
+  var c = getCfg();
+  document.getElementById("sAppId").value = c.apiKey || "";
+  document.getElementById("sAppKey").value = c.binId || "";
+}
+
+function closeSettings(){
+  document.getElementById("settingsMask").classList.add("hidden");
+}
+
+function saveSettings(){
+  var apiKey = document.getElementById("sAppId").value.trim();
+  var binId = document.getElementById("sAppKey").value.trim();
+  if(!apiKey){
+    toast("请填入 Master Key");
+    return;
+  }
+  setCfg({ apiKey: apiKey, binId: binId });
+  if(!binId){
+    createBin().then(function(id){
+      setCfg({ binId: id });
+      initCloud();
+      var box = document.getElementById("shareCodeBox");
+      var input = document.getElementById("sShareCode");
+      input.value = id;
+      box.classList.remove("hidden");
+      toast("已创建云日记本，把共享码发给对方");
+      closeSettings();
+      syncPull();
+    }).catch(function(e){
+      toast("创建失败：" + e.message);
+    });
+  } else {
+    initCloud();
+    closeSettings();
+    toast("连接成功");
+    syncPull();
+  }
+}
+
+loadLocal();
+</script>
+</body>
+</html>
